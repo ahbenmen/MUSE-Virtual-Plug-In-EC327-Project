@@ -204,6 +204,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout FiveBandEQAudioProcessor::cr
                                                            "Peak1 Gain",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f), 0.0f));
     
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak1 Quality",
+                                                           "Peak1 Quality",
+                                                           juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f), 1.0f));
+    
     layout.add(std::make_unique<juce::AudioParameterFloat>("Peak2 Freq",
                                                            "Peak2 Freq",
                                                            juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f), 2000.f));
@@ -212,21 +216,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout FiveBandEQAudioProcessor::cr
                                                            "Peak2 Gain",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f), 0.0f));
     
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak2 Quality",
+                                                           "Peak2 Quality",
+                                                           juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f), 1.0f));
+    
     layout.add(std::make_unique<juce::AudioParameterFloat>("Peak3 Freq",
                                                            "Peak3 Freq",
-                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f), 750.f));
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f), 5000.f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("Peak3 Gain",
                                                            "Peak3 Gain",
                                                            juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f), 0.0f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak1 Quality",
-                                                           "Peak1 Quality",
-                                                           juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f), 1.0f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak2 Quality",
-                                                           "Peak2 Quality",
-                                                           juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f), 1.0f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("Peak3 Quality",
                                                            "Peak3 Quality",
