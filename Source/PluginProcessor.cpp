@@ -166,8 +166,12 @@ bool FiveBandEQAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* FiveBandEQAudioProcessor::createEditor()
 {
+<<<<<<< HEAD
 //    return new FiveBandEQAudioProcessorEditor (*this);
     return new juce::GenericAudioProcessorEditor(*this);
+=======
+    return new FiveBandEQAudioProcessorEditor (*this);
+>>>>>>> 24b2febca1299971c2518a119eb25abf37a03e59
 }
 
 //==============================================================================
@@ -184,6 +188,7 @@ void FiveBandEQAudioProcessor::setStateInformation (const void* data, int sizeIn
     // whose contents will have been created by the getStateInformation() call.
 }
 
+<<<<<<< HEAD
 juce::AudioProcessorValueTreeState::ParameterLayout FiveBandEQAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
@@ -251,6 +256,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout FiveBandEQAudioProcessor::cr
     return layout;
 }
 
+=======
+>>>>>>> 24b2febca1299971c2518a119eb25abf37a03e59
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()

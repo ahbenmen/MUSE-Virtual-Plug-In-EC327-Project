@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<<<<<<< HEAD
 <JUCERPROJECT id="vpUPSS" name="FiveBandEQ" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               cppLanguageStandard="17">
@@ -12,6 +13,19 @@
       <FILE id="gv5IDN" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="rkZMZl" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+=======
+<JUCERPROJECT id="DUMevK" name="FiveBandEQ" projectType="audioplug" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
+  <MAINGROUP id="r5lN79" name="FiveBandEQ">
+    <GROUP id="{45F782E0-CDB4-C34A-842C-E0A7E6725CB7}" name="Source">
+      <FILE id="hSCjGU" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="WPfo8M" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+      <FILE id="sSfMet" name="PluginEditor.cpp" compile="1" resource="0"
+            file="Source/PluginEditor.cpp"/>
+      <FILE id="D8Idz3" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+>>>>>>> 24b2febca1299971c2518a119eb25abf37a03e59
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
