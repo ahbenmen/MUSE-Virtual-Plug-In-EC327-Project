@@ -52,14 +52,21 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-<<<<<<< HEAD
     
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameterLayout()};
-=======
->>>>>>> 24b2febca1299971c2518a119eb25abf37a03e59
 
 private:
+    using Filter = juce::dsp::IIR::Filter<float>;
+    
+    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
+    
+    using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter, Filter>;
+    
+    MonoChain leftChain, rightChain;
+    
+    
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FiveBandEQAudioProcessor)
 };

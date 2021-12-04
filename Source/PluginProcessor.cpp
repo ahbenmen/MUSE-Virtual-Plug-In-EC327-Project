@@ -95,6 +95,18 @@ void FiveBandEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    
+    juce::dsp::ProcessSpec spec; //
+    
+    spec.maximumBlockSize = samplesPerBlock; // number of samples to be processed at one time
+    
+    spec.numChannels = 1; // mono channels can only handle one chain at a time
+    
+    spec.sampleRate = sampleRate;
+    
+    leftChain.prepare(spec);
+    
+    rightChain.prepare(spec);
 }
 
 void FiveBandEQAudioProcessor::releaseResources()
@@ -150,12 +162,20 @@ void FiveBandEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    juce::dsp::AudioBlock<float> block(buffer);
+    
+    auto leftBlock = block.getSingleChannelBlock(0);
+    auto rightBlock = block.getSingleChannelBlock(1);
+    
+    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
+    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+    
+    leftChain.process(leftContext);
+    rightChain.process(rightContext);
 
-        // ..do something to the data...
-    }
+    
+    
+    // need to extract left and right channel from buffer
 }
 
 //==============================================================================
@@ -166,12 +186,8 @@ bool FiveBandEQAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* FiveBandEQAudioProcessor::createEditor()
 {
-<<<<<<< HEAD
 //    return new FiveBandEQAudioProcessorEditor (*this);
     return new juce::GenericAudioProcessorEditor(*this);
-=======
-    return new FiveBandEQAudioProcessorEditor (*this);
->>>>>>> 24b2febca1299971c2518a119eb25abf37a03e59
 }
 
 //==============================================================================
@@ -188,7 +204,6 @@ void FiveBandEQAudioProcessor::setStateInformation (const void* data, int sizeIn
     // whose contents will have been created by the getStateInformation() call.
 }
 
-<<<<<<< HEAD
 juce::AudioProcessorValueTreeState::ParameterLayout FiveBandEQAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
@@ -256,8 +271,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout FiveBandEQAudioProcessor::cr
     return layout;
 }
 
-=======
->>>>>>> 24b2febca1299971c2518a119eb25abf37a03e59
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
