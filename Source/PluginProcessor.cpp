@@ -107,6 +107,34 @@ void FiveBandEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     leftChain.prepare(spec);
     
     rightChain.prepare(spec);
+    
+    auto chainSettings = getChainSettings(apvts);
+    
+    auto peak1Coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+                                                                                chainSettings.peak1Freq,
+                                                                                chainSettings.peak1Quality,
+                                                                                juce::Decibels::decibelsToGain(chainSettings.peak1GainInDecibels));
+    
+    auto peak2Coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+                                                                                 chainSettings.peak2Freq,
+                                                                                 chainSettings.peak2Quality,
+                                                                                 juce::Decibels::decibelsToGain(chainSettings.peak2GainInDecibels));
+    
+    auto peak3Coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+                                                                                chainSettings.peak3Freq,
+                                                                                chainSettings.peak3Quality,
+                                                                                juce::Decibels::decibelsToGain(chainSettings.peak3GainInDecibels));
+    
+    *leftChain.get<ChainPositions::Peak1>().coefficients = *peak1Coefficients;
+    *rightChain.get<ChainPositions::Peak1>().coefficients = *peak1Coefficients;
+    
+    *leftChain.get<ChainPositions::Peak2>().coefficients = *peak2Coefficients;
+    *rightChain.get<ChainPositions::Peak2>().coefficients = *peak2Coefficients;
+    
+    *leftChain.get<ChainPositions::Peak3>().coefficients = *peak3Coefficients;
+    *rightChain.get<ChainPositions::Peak3>().coefficients = *peak3Coefficients;
+    
+    
 }
 
 void FiveBandEQAudioProcessor::releaseResources()
@@ -155,6 +183,32 @@ void FiveBandEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+    
+    auto chainSettings = getChainSettings(apvts);
+    
+    auto peak1Coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+                                                                                chainSettings.peak1Freq,
+                                                                                chainSettings.peak1Quality,
+                                                                                juce::Decibels::decibelsToGain(chainSettings.peak1GainInDecibels));
+    
+    auto peak2Coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+                                                                                chainSettings.peak2Freq,
+                                                                                chainSettings.peak2Quality,
+                                                                                juce::Decibels::decibelsToGain(chainSettings.peak2GainInDecibels));
+    
+    auto peak3Coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+                                                                                chainSettings.peak3Freq,
+                                                                                chainSettings.peak3Quality,
+                                                                                juce::Decibels::decibelsToGain(chainSettings.peak3GainInDecibels));
+    
+    *leftChain.get<ChainPositions::Peak1>().coefficients = *peak1Coefficients;
+    *rightChain.get<ChainPositions::Peak1>().coefficients = *peak1Coefficients;
+    
+    *leftChain.get<ChainPositions::Peak2>().coefficients = *peak2Coefficients;
+    *rightChain.get<ChainPositions::Peak2>().coefficients = *peak2Coefficients;
+    
+    *leftChain.get<ChainPositions::Peak3>().coefficients = *peak3Coefficients;
+    *rightChain.get<ChainPositions::Peak3>().coefficients = *peak3Coefficients;
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -202,6 +256,33 @@ void FiveBandEQAudioProcessor::setStateInformation (const void* data, int sizeIn
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+}
+
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
+{
+    ChainSettings settings;
+    
+    settings.lowCutFreq = apvts.getRawParameterValue("LowCut Freq")->load();
+    settings.highCutFreq = apvts.getRawParameterValue("HighCut Freq")->load();
+    
+    settings.peak1Freq = apvts.getRawParameterValue("Peak1 Freq")->load();
+    settings.peak1GainInDecibels = apvts.getRawParameterValue("Peak1 Gain")->load();
+    settings.peak1Quality = apvts.getRawParameterValue("Peak1 Quality")->load();
+    
+    settings.peak2Freq = apvts.getRawParameterValue("Peak2 Freq")->load();
+    settings.peak2GainInDecibels = apvts.getRawParameterValue("Peak2 Gain")->load();
+    settings.peak2Quality = apvts.getRawParameterValue("Peak2 Quality")->load();
+    
+    settings.peak3Freq = apvts.getRawParameterValue("Peak3 Freq")->load();
+    settings.peak3GainInDecibels = apvts.getRawParameterValue("Peak3 Gain")->load();
+    settings.peak3Quality = apvts.getRawParameterValue("Peak3 Quality")->load();
+    
+    settings.lowCutSlope = apvts.getRawParameterValue("LowCut Slope")->load();
+    settings.highCutSlope = apvts.getRawParameterValue("HighCut Slope")->load();
+    
+    
+    
+    return settings;
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout FiveBandEQAudioProcessor::createParameterLayout()
