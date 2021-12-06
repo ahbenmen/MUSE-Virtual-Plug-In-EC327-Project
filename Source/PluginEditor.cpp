@@ -8,40 +8,16 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-
-//==============================================================================
-FiveBandEQAudioProcessorEditor::FiveBandEQAudioProcessorEditor (FiveBandEQAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p),
-peak1FreqSliderAttachment(audioProcessor.apvts, "Peak1 Freq", peak1FreqSlider),
-peak1GainSliderAttachment(audioProcessor.apvts, "Peak1 Gain", peak1GainSlider),
-peak1QualitySliderAttachment(audioProcessor.apvts, "Peak1 Quality", peak1QualitySlider),
-peak2FreqSliderAttachment(audioProcessor.apvts, "Peak2 Freq", peak2FreqSlider),
-peak2GainSliderAttachment(audioProcessor.apvts, "Peak2 Gain", peak2GainSlider),
-peak2QualitySliderAttachment(audioProcessor.apvts, "Peak2 Quality", peak2QualitySlider),
-peak3FreqSliderAttachment(audioProcessor.apvts, "Peak3 Freq", peak3FreqSlider),
-peak3GainSliderAttachment(audioProcessor.apvts, "Peak3 Gain", peak3GainSlider),
-peak3QualitySliderAttachment(audioProcessor.apvts, "Peak3 Quality", peak3QualitySlider),
-lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
-highCutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq", highCutFreqSlider),
-lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCutSlope", lowCutSlopeSlider),
-highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCutSlope", highCutSlopeSlider)
+ResponseCurveComponent::ResponseCurveComponent(FiveBandEQAudioProcessor& p) : audioProcessor(p)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    for( auto* comp : getComps () )
-    {
-        addAndMakeVisible(comp);
-    }
     const auto& params = audioProcessor.getParameters();
     for(auto param: params){
         param->addListener(this);
     }
 
     startTimerHz(60);
-    setSize (1000, 800);
 }
-
-FiveBandEQAudioProcessorEditor::~FiveBandEQAudioProcessorEditor()
+ResponseCurveComponent::~ResponseCurveComponent()
 {
     const auto& params = audioProcessor.getParameters();
     for(auto param: params){
@@ -49,15 +25,38 @@ FiveBandEQAudioProcessorEditor::~FiveBandEQAudioProcessorEditor()
     }
 }
 
-//==============================================================================
-void FiveBandEQAudioProcessorEditor::paint (juce::Graphics& g)
+void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float newValue)
+{
+    parametersChanged.set(true);
+}
+
+void ResponseCurveComponent::timerCallback()
+{
+    if( parametersChanged.compareAndSetBool(false,true))
+    {
+        //update monochain
+        auto chainSettings=getChainSettings(audioProcessor.apvts);
+        auto peak1Coefficients=makePeak1Filter(chainSettings, audioProcessor.getSampleRate());
+        auto peak2Coefficients=makePeak2Filter(chainSettings, audioProcessor.getSampleRate());
+        auto peak3Coefficients=makePeak3Filter(chainSettings, audioProcessor.getSampleRate());
+        updateCoefficients(monoChain.get<ChainPositions::Peak1>().coefficients,peak1Coefficients);
+        updateCoefficients(monoChain.get<ChainPositions::Peak2>().coefficients,peak2Coefficients);
+        updateCoefficients(monoChain.get<ChainPositions::Peak3>().coefficients,peak3Coefficients);
+        auto lowCutCoefficients= makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
+        auto highCutCoefficients= makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
+        updateCutFilter(monoChain.get<ChainPositions::LowCut>(),lowCutCoefficients, chainSettings.lowCutSlope);
+        updateCutFilter(monoChain.get<ChainPositions::HighCut>(),highCutCoefficients, chainSettings.highCutSlope);
+        //signal new draw of response curve
+        repaint();
+    }
+}
+void ResponseCurveComponent::paint (juce::Graphics& g)
 {
     using namespace juce;
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (Colours::black);
 
-    auto bounds = getLocalBounds();
-    auto responseArea= bounds.removeFromTop(bounds.getHeight() * .33);
+    auto responseArea = getLocalBounds();
 
     auto w=responseArea.getWidth();
 
@@ -126,6 +125,43 @@ void FiveBandEQAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour(Colours::blue);
     g.strokePath(responseCurve, PathStrokeType(2.f));
 }
+//==============================================================================
+FiveBandEQAudioProcessorEditor::FiveBandEQAudioProcessorEditor (FiveBandEQAudioProcessor& p)
+    : AudioProcessorEditor (&p), audioProcessor (p),
+responseCurveComponent(audioProcessor),
+peak1FreqSliderAttachment(audioProcessor.apvts, "Peak1 Freq", peak1FreqSlider),
+peak1GainSliderAttachment(audioProcessor.apvts, "Peak1 Gain", peak1GainSlider),
+peak1QualitySliderAttachment(audioProcessor.apvts, "Peak1 Quality", peak1QualitySlider),
+peak2FreqSliderAttachment(audioProcessor.apvts, "Peak2 Freq", peak2FreqSlider),
+peak2GainSliderAttachment(audioProcessor.apvts, "Peak2 Gain", peak2GainSlider),
+peak2QualitySliderAttachment(audioProcessor.apvts, "Peak2 Quality", peak2QualitySlider),
+peak3FreqSliderAttachment(audioProcessor.apvts, "Peak3 Freq", peak3FreqSlider),
+peak3GainSliderAttachment(audioProcessor.apvts, "Peak3 Gain", peak3GainSlider),
+peak3QualitySliderAttachment(audioProcessor.apvts, "Peak3 Quality", peak3QualitySlider),
+lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
+highCutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq", highCutFreqSlider),
+lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCutSlope", lowCutSlopeSlider),
+highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCutSlope", highCutSlopeSlider)
+{
+    // Make sure that before the constructor has finished, you've set the
+    // editor's size to whatever you need it to be.
+    for( auto* comp : getComps () )
+    {
+        addAndMakeVisible(comp);
+    }
+    
+    setSize (1000, 800);
+}
+
+FiveBandEQAudioProcessorEditor::~FiveBandEQAudioProcessorEditor()
+{
+    
+}
+
+//==============================================================================
+
+
+
 
 void FiveBandEQAudioProcessorEditor::resized()
 {
@@ -134,7 +170,7 @@ void FiveBandEQAudioProcessorEditor::resized()
 
     auto bounds = getLocalBounds();
     auto responseArea = bounds.removeFromTop(bounds.getHeight() * .33);
-
+    responseCurveComponent.setBounds(responseArea);
     auto lowCutArea = bounds.removeFromLeft(bounds.getWidth()*.20);
     auto highCutArea = bounds.removeFromRight(bounds.getWidth() * .25);
 
@@ -165,31 +201,7 @@ void FiveBandEQAudioProcessorEditor::resized()
 
 }
 
-void FiveBandEQAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
-{
-    parametersChanged.set(true);
-}
 
-void FiveBandEQAudioProcessorEditor::timerCallback()
-{
-    if( parametersChanged.compareAndSetBool(false,true))
-    {
-        //update monochain
-        auto chainSettings=getChainSettings(audioProcessor.apvts);
-        auto peak1Coefficients=makePeak1Filter(chainSettings, audioProcessor.getSampleRate());
-        auto peak2Coefficients=makePeak2Filter(chainSettings, audioProcessor.getSampleRate());
-        auto peak3Coefficients=makePeak3Filter(chainSettings, audioProcessor.getSampleRate());
-        updateCoefficients(monoChain.get<ChainPositions::Peak1>().coefficients,peak1Coefficients);
-        updateCoefficients(monoChain.get<ChainPositions::Peak2>().coefficients,peak2Coefficients);
-        updateCoefficients(monoChain.get<ChainPositions::Peak3>().coefficients,peak3Coefficients);
-        auto lowCutCoefficients= makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
-        auto highCutCoefficients= makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
-        updateCutFilter(monoChain.get<ChainPositions::LowCut>(),lowCutCoefficients, chainSettings.lowCutSlope);
-        updateCutFilter(monoChain.get<ChainPositions::HighCut>(),highCutCoefficients, chainSettings.highCutSlope);
-        //signal new draw of response curve
-        repaint();
-    }
-}
 
 
 
@@ -214,6 +226,7 @@ std::vector<juce::Component*> FiveBandEQAudioProcessorEditor::getComps()
         &lowCutFreqSlider,
         &highCutFreqSlider,
         &lowCutSlopeSlider,
-        &highCutSlopeSlider
+        &highCutSlopeSlider,
+        &responseCurveComponent
     };
 }

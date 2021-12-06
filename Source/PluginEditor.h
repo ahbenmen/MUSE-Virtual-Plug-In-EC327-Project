@@ -21,25 +21,36 @@ struct CustomRotarySlider : juce::Slider{
   }
 };
 
-class FiveBandEQAudioProcessorEditor  : public juce::AudioProcessorEditor,
+struct ResponseCurveComponent: public juce::Component,
 juce::AudioProcessorParameter::Listener, juce::Timer
+{
+  ResponseCurveComponent(FiveBandEQAudioProcessor&);
+  ~ResponseCurveComponent();
+  void parameterValueChanged (int parameterIndex, float newValue) override;
+  void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override {};
+  void timerCallback() override;
+  void paint(juce::Graphics& g) override;
+private:
+  FiveBandEQAudioProcessor& audioProcessor;
+  juce::Atomic<bool> parametersChanged {false};
+  MonoChain monoChain;
+};
+
+class FiveBandEQAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
     FiveBandEQAudioProcessorEditor (FiveBandEQAudioProcessor&);
     ~FiveBandEQAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint (juce::Graphics&) override;
     void resized() override;
-    void parameterValueChanged (int parameterIndex, float newValue) override;
-    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override {};
-    void timerCallback() override;
+    
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     FiveBandEQAudioProcessor& audioProcessor;
 
-    juce::Atomic<bool> parametersChanged {false};
+    
 
     CustomRotarySlider peak1FreqSlider,
     peak2FreqSlider,
@@ -54,6 +65,8 @@ private:
     highCutFreqSlider,
     lowCutSlopeSlider,
     highCutSlopeSlider;
+
+    ResponseCurveComponent responseCurveComponent;
 
     using APVTS = juce::AudioProcessorValueTreeState;
     using Attachment = APVTS::SliderAttachment;
@@ -73,7 +86,7 @@ private:
 
     std::vector<juce::Component*> getComps();
 
-    MonoChain monoChain;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FiveBandEQAudioProcessorEditor)
 };
