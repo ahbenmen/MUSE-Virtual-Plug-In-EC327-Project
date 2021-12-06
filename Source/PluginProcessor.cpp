@@ -192,8 +192,8 @@ bool FiveBandEQAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* FiveBandEQAudioProcessor::createEditor()
 {
-//    return new FiveBandEQAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new FiveBandEQAudioProcessorEditor (*this);
+//    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -202,12 +202,19 @@ void FiveBandEQAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+    juce::MemoryOutputStream mos(destData, true);
+    apvts.state.writeToStream(mos);
 }
 
 void FiveBandEQAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+    auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
+    if(tree.isValid() ){
+        apvts.replaceState(tree);
+        updateFilters();
+    }
 }
 
 ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
@@ -237,22 +244,29 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
     return settings;
 }
 
-void FiveBandEQAudioProcessor::updatePeakFilter(const ChainSettings &chainSettings)
-{
-    auto peak1Coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+Coefficients makePeak1Filter(const ChainSettings& chainSettings, double sampleRate){
+    return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
                                                                                 chainSettings.peak1Freq,
                                                                                 chainSettings.peak1Quality,
                                                                                 juce::Decibels::decibelsToGain(chainSettings.peak1GainInDecibels));
-    
-    auto peak2Coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+}
+Coefficients makePeak2Filter(const ChainSettings& chainSettings, double sampleRate){
+    return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
                                                                                 chainSettings.peak2Freq,
                                                                                 chainSettings.peak2Quality,
                                                                                 juce::Decibels::decibelsToGain(chainSettings.peak2GainInDecibels));
-    
-    auto peak3Coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+}
+Coefficients makePeak3Filter(const ChainSettings& chainSettings, double sampleRate){
+    return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
                                                                                 chainSettings.peak3Freq,
                                                                                 chainSettings.peak3Quality,
                                                                                 juce::Decibels::decibelsToGain(chainSettings.peak3GainInDecibels));
+}
+void FiveBandEQAudioProcessor::updatePeakFilter(const ChainSettings &chainSettings)
+{
+    auto peak1Coefficients = makePeak1Filter(chainSettings, getSampleRate());
+    auto peak2Coefficients = makePeak2Filter(chainSettings, getSampleRate());
+    auto peak3Coefficients = makePeak3Filter(chainSettings, getSampleRate());
     
 //    *leftChain.get<ChainPositions::Peak1>().coefficients = *peak1Coefficients;
 //    *rightChain.get<ChainPositions::Peak1>().coefficients = *peak1Coefficients;
@@ -271,16 +285,14 @@ void FiveBandEQAudioProcessor::updatePeakFilter(const ChainSettings &chainSettin
     updateCoefficients(rightChain.get<ChainPositions::Peak3>().coefficients, peak3Coefficients);
 }
 
-void FiveBandEQAudioProcessor::updateCoefficients(Coefficients &old, const Coefficients &replacements)
+void updateCoefficients(Coefficients &old, const Coefficients &replacements)
 {
     *old = *replacements;
 }
 
 void FiveBandEQAudioProcessor::updateLowCutFilters(const ChainSettings &chainSettings)
 {
-    auto cutCoeficcients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq,
-                                                                                                       getSampleRate(),
-                                                                                                       2*(chainSettings.lowCutSlope + 1));
+    auto cutCoeficcients = makeLowCutFilter(chainSettings, getSampleRate());
     auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
     auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
     
@@ -290,9 +302,7 @@ void FiveBandEQAudioProcessor::updateLowCutFilters(const ChainSettings &chainSet
 
 void FiveBandEQAudioProcessor::updateHighCutFilters(const ChainSettings &chainSettings)
 {
-    auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq,
-                                                                                                          getSampleRate(),
-                                                                                                          2*(chainSettings.highCutSlope + 1));
+    auto highCutCoefficients = makeHighCutFilter(chainSettings, getSampleRate());
     auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
     auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
     
