@@ -20,10 +20,10 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
     juce::Slider& slider){
     using namespace juce;
     auto bounds= Rectangle<float>(x,y,width,height);
-    g.setColour(Colour(6u,14u,127u));
+    g.setColour(Colour(6u,14u,60u));
     g.fillEllipse(bounds);
 
-    g.setColour(Colour(60u, 100u,127u));
+    g.setColour(Colour(200u, 200u,200u));
     g.drawEllipse(bounds, 1.f);
 
     if(auto*rswl=dynamic_cast<RotarySliderWithLabels*>(&slider))
@@ -57,11 +57,12 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
 }
 void RotarySliderWithLabels::paint(juce::Graphics &g){
     using namespace juce;
+    g.setColour(Colours::white);
     auto startAngle=degreesToRadians(180.f+45.f);
     auto endAngle=degreesToRadians(180.f-45.f+360);
     auto range=getRange();
     auto sliderBounds=getSliderBounds();
-
+    g.fillAll(Colours::darkgrey);
    // g.setColour(Colours::black);
    // g.drawRect(getLocalBounds());
     //g.setColour(Colours::yellow);
@@ -75,7 +76,7 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
 
 
 
-    g.setColour(Colour(120u,80u,120u));
+    g.setColour(Colour(200u,200u,200u));
     g.setFont(getTextHeight());
     auto numChoices=labels.size();
     for(int i=0;i<numChoices;++i)
@@ -180,7 +181,7 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
 {
     using namespace juce;
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (Colours::black);
+    g.fillAll(Colour(40u,40u,40u));
     g.drawImage(background, getLocalBounds().toFloat());
     auto responseArea = getAnalysisArea();
 
@@ -248,7 +249,7 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
 
     g.setColour(Colours::white);
     g.drawRoundedRectangle(getRenderArea().toFloat(), 4.f, 1.f);
-    g.setColour(Colours::blue);
+    g.setColour(Colours::yellow);
     g.strokePath(responseCurve, PathStrokeType(2.f));
 }
 
@@ -298,7 +299,7 @@ void ResponseCurveComponent::resized()
     {
         auto y=jmap(gDb,-24.f,24.f,float(bottom),float(top));
      //   g.drawHorizontalLine(y,0,getWidth());
-        g.setColour(gDb == 0.f ? Colour(120u,80u,120u): Colours::white);
+        g.setColour(gDb == 0.f ? Colours::blue: Colours::white);
         g.drawHorizontalLine(y,left,right);
     }
  //   g.drawRect(getAnalysisArea());
@@ -345,7 +346,7 @@ void ResponseCurveComponent::resized()
             r.setX(getWidth()-textWidth);
             r.setCentre(r.getCentreX(),y);
 
-            g.setColour(gDb == 0.f ? Colour(120u,80u,120u): Colours::white);
+            g.setColour(gDb == 0.f ? Colours::blue: Colours::white);
 
             g.drawFittedText(str, r, juce::Justification::centred, 1);
 
@@ -405,8 +406,8 @@ peak3GainSliderAttachment(audioProcessor.apvts, "Peak3 Gain", peak3GainSlider),
 peak3QualitySliderAttachment(audioProcessor.apvts, "Peak3 Quality", peak3QualitySlider),
 lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
 highCutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq", highCutFreqSlider),
-lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCutSlope", lowCutSlopeSlider),
-highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCutSlope", highCutSlopeSlider)
+lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowCutSlopeSlider),
+highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highCutSlopeSlider)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
