@@ -292,9 +292,7 @@ void updateCoefficients(Coefficients &old, const Coefficients &replacements)
 
 void FiveBandEQAudioProcessor::updateLowCutFilters(const ChainSettings &chainSettings)
 {
-    auto cutCoeficcients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq,
-                                                                                                       getSampleRate(),
-                                                                                                       2*(chainSettings.lowCutSlope + 1));
+    auto cutCoeficcients = makeLowCutFilter(chainSettings, getSampleRate());
     auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
     auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
     
@@ -304,9 +302,7 @@ void FiveBandEQAudioProcessor::updateLowCutFilters(const ChainSettings &chainSet
 
 void FiveBandEQAudioProcessor::updateHighCutFilters(const ChainSettings &chainSettings)
 {
-    auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq,
-                                                                                                          getSampleRate(),
-                                                                                                          2*(chainSettings.highCutSlope + 1));
+    auto highCutCoefficients = makeHighCutFilter(chainSettings, getSampleRate());
     auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
     auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
     

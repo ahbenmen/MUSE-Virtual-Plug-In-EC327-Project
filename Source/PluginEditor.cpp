@@ -182,6 +182,10 @@ void FiveBandEQAudioProcessorEditor::timerCallback()
         updateCoefficients(monoChain.get<ChainPositions::Peak1>().coefficients,peak1Coefficients);
         updateCoefficients(monoChain.get<ChainPositions::Peak2>().coefficients,peak2Coefficients);
         updateCoefficients(monoChain.get<ChainPositions::Peak3>().coefficients,peak3Coefficients);
+        auto lowCutCoefficients= makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
+        auto highCutCoefficients= makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
+        updateCutFilter(monoChain.get<ChainPositions::LowCut>(),lowCutCoefficients, chainSettings.lowCutSlope);
+        updateCutFilter(monoChain.get<ChainPositions::HighCut>(),highCutCoefficients, chainSettings.highCutSlope);
         //signal new draw of response curve
         repaint();
     }
