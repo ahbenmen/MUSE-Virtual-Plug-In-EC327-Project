@@ -8,6 +8,68 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+
+void LookAndFeel::drawRotarySlider(juce::Graphics& g,
+    int x,
+    int y,
+    int width,
+    int height,
+    float sliderPosProportional,
+    float rotaryStartAngle,
+    float rotaryEndAngle,
+    juce::Slider& slider){
+    using namespace juce;
+    auto bounds= Rectangle<float>(x,y,width,height);
+    g.setColour(Colour(6u,14u,127u));
+    g.fillEllipse(bounds);
+
+    g.setColour(Colour(60u, 100u,127u));
+    g.drawEllipse(bounds, 1.f);
+
+    auto center=bounds.getCentre();
+    Path p;
+    Rectangle<float> r;
+    r.setLeft(center.getX()-2);
+    r.setRight(center.getX()+2);
+    r.setTop(bounds.getY());
+    r.setBottom(center.getY());
+    p.addRectangle(r);
+    jassert(rotaryStartAngle<rotaryEndAngle);
+    auto sliderAngRad=jmap(sliderPosProportional,0.f,1.f,rotaryStartAngle,rotaryEndAngle);
+    p.applyTransform(AffineTransform().rotated(sliderAngRad,center.getX(),center.getY()));
+    g.fillPath(p);
+}
+void RotarySliderWithLabels::paint(juce::Graphics &g){
+    using namespace juce;
+    auto startAngle=degreesToRadians(180.f+45.f);
+    auto endAngle=degreesToRadians(180.f-45.f+360);
+    auto range=getRange();
+    auto sliderBounds=getSliderBounds();
+
+    g.setColour(Colours::black);
+    g.drawRect(getLocalBounds());
+    g.setColour(Colours::yellow);
+    g.drawRect(sliderBounds);
+
+    getLookAndFeel().drawRotarySlider(g,sliderBounds.getX(),sliderBounds.getY(),sliderBounds.getWidth(),
+        sliderBounds.getHeight(),jmap(getValue(), range.getStart(), range.getEnd(),0.0,1.0), startAngle, endAngle, *this );
+}
+juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds() const
+{
+    auto bounds= getLocalBounds();
+
+    auto size=juce::jmin(bounds.getWidth(),bounds.getHeight());
+
+    size-=getTextHeight()*2;
+
+    juce::Rectangle<int> r;
+    r.setSize(size, size);
+    r.setCentre(bounds.getCentreX(),0);
+    r.setY(2);
+
+    return r;
+}
+
 ResponseCurveComponent::ResponseCurveComponent(FiveBandEQAudioProcessor& p) : audioProcessor(p)
 {
     const auto& params = audioProcessor.getParameters();
@@ -128,6 +190,19 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
 //==============================================================================
 FiveBandEQAudioProcessorEditor::FiveBandEQAudioProcessorEditor (FiveBandEQAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
+peak1FreqSlider(*audioProcessor.apvts.getParameter("Peak1 Freq"), "Hz"),
+peak2FreqSlider(*audioProcessor.apvts.getParameter("Peak2 Freq"), "Hz"),
+peak3FreqSlider(*audioProcessor.apvts.getParameter("Peak3 Freq"), "Hz"),
+peak1GainSlider(*audioProcessor.apvts.getParameter("Peak1 Gain"), "dB"),
+peak2GainSlider(*audioProcessor.apvts.getParameter("Peak2 Gain"), "dB"),
+peak3GainSlider(*audioProcessor.apvts.getParameter("Peak3 Gain"), "dB"),
+peak1QualitySlider(*audioProcessor.apvts.getParameter("Peak1 Quality"), ""),
+peak2QualitySlider(*audioProcessor.apvts.getParameter("Peak2 Quality"), ""),
+peak3QualitySlider(*audioProcessor.apvts.getParameter("Peak3 Quality"), ""),
+lowCutFreqSlider(*audioProcessor.apvts.getParameter("LowCut Freq"), "Hz"),
+highCutFreqSlider(*audioProcessor.apvts.getParameter("HighCut Freq"), "Hz"),
+lowCutSlopeSlider(*audioProcessor.apvts.getParameter("LowCutSlope"), "dB/Oct"),
+highCutSlopeSlider(*audioProcessor.apvts.getParameter("HighCutSlope"), "dB/Oct"),
 responseCurveComponent(audioProcessor),
 peak1FreqSliderAttachment(audioProcessor.apvts, "Peak1 Freq", peak1FreqSlider),
 peak1GainSliderAttachment(audioProcessor.apvts, "Peak1 Gain", peak1GainSlider),

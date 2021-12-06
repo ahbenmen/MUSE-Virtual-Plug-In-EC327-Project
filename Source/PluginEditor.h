@@ -14,11 +14,27 @@
 //==============================================================================
 /**
 */
-
-struct CustomRotarySlider : juce::Slider{
-  CustomRotarySlider() : juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::TextEntryBoxPosition::NoTextBox){
-
+struct LookAndFeel : juce::LookAndFeel_V4
+{
+  void drawRotarySlider (juce::Graphics&,
+                          int x, int y, int width, int height, float sliderPosProportional,
+                          float rotaryStartAngle, float rotaryEndAngle, juce::Slider&) override;
+};
+struct RotarySliderWithLabels : juce::Slider{
+  RotarySliderWithLabels(juce::RangedAudioParameter& rap, const juce::String& unitSuffix) : param(&rap), suffix(unitSuffix), juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::TextEntryBoxPosition::NoTextBox){
+    setLookAndFeel(&lnf);
   }
+  ~RotarySliderWithLabels(){
+    setLookAndFeel(nullptr);
+  }
+  void paint(juce::Graphics& g) override;
+  juce::Rectangle<int> getSliderBounds() const;
+  int getTextHeight() const {return 14; }
+  juce::String getDisplayString() const;
+private:
+  LookAndFeel lnf;
+  juce::RangedAudioParameter* param;
+  juce::String suffix;
 };
 
 struct ResponseCurveComponent: public juce::Component,
@@ -52,7 +68,7 @@ private:
 
     
 
-    CustomRotarySlider peak1FreqSlider,
+    RotarySliderWithLabels peak1FreqSlider,
     peak2FreqSlider,
     peak3FreqSlider,
     peak1GainSlider,
