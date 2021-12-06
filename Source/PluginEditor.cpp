@@ -87,7 +87,28 @@ juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds() const
 }
 juce::String RotarySliderWithLabels::getDisplayString() const
 {
-    return juce::String(getValue());
+    if(auto* choiceParam=dynamic_cast<juce::AudioParameterChoice*>(param))
+            return choiceParam->getCurrentChoiceName();
+    juce::String str;
+    bool addK=false;
+    if(auto* floatParam=dynamic_cast<juce::AudioParameterFloat*>(param))
+    {
+        float val= getValue();
+        if(val>999.f)
+        {
+            val/=1000.f;
+            addK = true;
+        }
+        str= juce::String(val, (addK? 2 : 0));
+    }
+    if(suffix.isNotEmpty())
+    {
+        str<<" ";
+        if(addK)
+            str<<"k";
+        str<<suffix;
+    }
+    return str;
 }
 ResponseCurveComponent::ResponseCurveComponent(FiveBandEQAudioProcessor& p) : audioProcessor(p)
 {
@@ -215,9 +236,9 @@ peak3FreqSlider(*audioProcessor.apvts.getParameter("Peak3 Freq"), "Hz"),
 peak1GainSlider(*audioProcessor.apvts.getParameter("Peak1 Gain"), "dB"),
 peak2GainSlider(*audioProcessor.apvts.getParameter("Peak2 Gain"), "dB"),
 peak3GainSlider(*audioProcessor.apvts.getParameter("Peak3 Gain"), "dB"),
-peak1QualitySlider(*audioProcessor.apvts.getParameter("Peak1 Quality"), ""),
-peak2QualitySlider(*audioProcessor.apvts.getParameter("Peak2 Quality"), ""),
-peak3QualitySlider(*audioProcessor.apvts.getParameter("Peak3 Quality"), ""),
+peak1QualitySlider(*audioProcessor.apvts.getParameter("Peak1 Quality"), "dB/Oct"),
+peak2QualitySlider(*audioProcessor.apvts.getParameter("Peak2 Quality"), "dB/Oct"),
+peak3QualitySlider(*audioProcessor.apvts.getParameter("Peak3 Quality"), "dB/Oct"),
 lowCutFreqSlider(*audioProcessor.apvts.getParameter("LowCut Freq"), "Hz"),
 highCutFreqSlider(*audioProcessor.apvts.getParameter("HighCut Freq"), "Hz"),
 lowCutSlopeSlider(*audioProcessor.apvts.getParameter("LowCutSlope"), "dB/Oct"),
