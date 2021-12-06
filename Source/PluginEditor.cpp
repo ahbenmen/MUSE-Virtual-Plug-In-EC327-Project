@@ -75,7 +75,7 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
 
 
 
-    g.setColour(Colour(20u,80u,100u));
+    g.setColour(Colour(120u,80u,120u));
     g.setFont(getTextHeight());
     auto numChoices=labels.size();
     for(int i=0;i<numChoices;++i)
@@ -265,8 +265,8 @@ peak2QualitySlider(*audioProcessor.apvts.getParameter("Peak2 Quality"), "dB/Oct"
 peak3QualitySlider(*audioProcessor.apvts.getParameter("Peak3 Quality"), "dB/Oct"),
 lowCutFreqSlider(*audioProcessor.apvts.getParameter("LowCut Freq"), "Hz"),
 highCutFreqSlider(*audioProcessor.apvts.getParameter("HighCut Freq"), "Hz"),
-lowCutSlopeSlider(*audioProcessor.apvts.getParameter("LowCutSlope"), "dB/Oct"),
-highCutSlopeSlider(*audioProcessor.apvts.getParameter("HighCutSlope"), "dB/Oct"),
+lowCutSlopeSlider(*audioProcessor.apvts.getParameter("LowCut Slope"), "dB/Oct"),
+highCutSlopeSlider(*audioProcessor.apvts.getParameter("HighCut Slope"), "dB/Oct"),
 responseCurveComponent(audioProcessor),
 peak1FreqSliderAttachment(audioProcessor.apvts, "Peak1 Freq", peak1FreqSlider),
 peak1GainSliderAttachment(audioProcessor.apvts, "Peak1 Gain", peak1GainSlider),
@@ -306,7 +306,10 @@ highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCutSlope", highCutSlopeS
     lowCutFreqSlider.labels.add({1.f,"20kHz"});
     highCutFreqSlider.labels.add({0.f,"20Hz"});
     highCutFreqSlider.labels.add({1.f,"20kHz"});
-
+    lowCutSlopeSlider.labels.add({0.0f, "12"});
+    lowCutSlopeSlider.labels.add({1.f, "48"});   
+    highCutSlopeSlider.labels.add({0.0f, "12"});
+    highCutSlopeSlider.labels.add({1.f, "48"}); 
 
     for( auto* comp : getComps () )
     {
