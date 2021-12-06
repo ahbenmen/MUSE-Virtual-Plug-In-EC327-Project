@@ -51,10 +51,14 @@ juce::AudioProcessorParameter::Listener, juce::Timer
   void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override {};
   void timerCallback() override;
   void paint(juce::Graphics& g) override;
+  void resized() override;
 private:
   FiveBandEQAudioProcessor& audioProcessor;
   juce::Atomic<bool> parametersChanged {false};
   MonoChain monoChain;
+  juce::Image background;
+  juce::Rectangle<int> getRenderArea();
+  juce::Rectangle<int> getAnalysisArea();
 };
 
 class FiveBandEQAudioProcessorEditor  : public juce::AudioProcessorEditor
