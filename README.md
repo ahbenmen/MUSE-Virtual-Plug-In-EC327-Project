@@ -2,7 +2,7 @@
 
 Team name: MUSE
 
-Member names: 
+Member names:
 Tariq Georges - tgeorges@bu.edu
 Ahmed Benmensour - ahbenmen@bu.edu
 Usman Jalil- ujalil@bu.edu
