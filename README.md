@@ -13,4 +13,4 @@ Overview: MUSE is an object oriented C++ Virtual Studio Technology (VST)—an au
 
 In order to build this project, you must first find the JUCE framework on GitHub (https://github.com/juce-framework/JUCE). After, find the Projucer file in the extras folder, run the solution, and build it. When you open the Projucer application, set the language to C++ 17, add a JUCE_DSP module, link the Projucer application to the JUCE folders and modules. Finally, select your environment and create your project!
 
-Youtube video link: Waiting on Keven
+Youtube video link: https://www.youtube.com/watch?v=-l9_pZFQ4mM
